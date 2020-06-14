@@ -1,26 +1,59 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 
-function App() {
+const selector = (state) => state.valueContainer.value;
+const updateSelector = (state) => state.forcedUpdateCounter;
+
+export const PrimaryComponent = () => {
+  const [startTimer, setStartTimer] = useState(false);
+
+  const value = useSelector(selector);
+  const updateCount = useSelector(updateSelector);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!startTimer) {
+      return;
+    }
+
+    dispatch({
+      type: "setValue",
+      value: "unset",
+    });
+
+    let timeout = undefined;
+    let tickCount = 0;
+
+    timeout = setInterval(() => {
+      if (tickCount > 4) {
+        setStartTimer(false);
+        clearInterval(timeout);
+        timeout = undefined;
+      }
+
+      dispatch({
+        type: "setValue",
+        value: `${tickCount} Ticks`,
+      });
+
+      tickCount += 1;
+    }, 10);
+  }, [startTimer]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <div>{value}</div>
+      <button onClick={() => setStartTimer(true)}>Click</button>
+      <div>{updateCount}</div>
+      <button
+        onClick={() =>
+          dispatch({
+            type: "forceUpdate",
+          })
+        }
+      >
+        Update
+      </button>
     </div>
   );
-}
-
-export default App;
+};
